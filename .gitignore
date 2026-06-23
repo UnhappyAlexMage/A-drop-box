@@ -3,11 +3,15 @@
 **/tmp
 **/out-tsc
 **/bazel-out
+**/node_modules
 
 # Node
-**/node_modules
+**./*log
 npm-debug.log
+pnpm-debug.log
+yarn-debug.log
 yarn-error.log
+lerna-debug.log
 
 # IDEs and editors
 .idea/
@@ -37,6 +41,33 @@ testem.log
 /typings
 __screenshots__/
 
+# dotenv environment variable files
+**/.env
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+**/.env.local
+
+# temp directory
+**/api/.temp
+**/api/.tmp
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
 # System files
 .DS_Store
 Thumbs.db
+
+# OS
+.DS_Store
+
+# Tests
+**/coverage
+**/.nyc_output
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
