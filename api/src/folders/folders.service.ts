@@ -14,8 +14,8 @@ export class FoldersService {
         try {
             const fileContent = await fs.readFile(this.filePath, 'utf8');
             return JSON.parse(fileContent);
-        } catch(error) {
-            if(this.filePath.length === 0) {
+        } catch(error: any) {
+            if(error.code === 'ENOENT') {
                 return [];
             }
             throw new Error("GET: не удалось прочиать файл folders");
@@ -31,7 +31,7 @@ export class FoldersService {
             const stringifiedData = JSON.stringify(folders);
             await fs.writeFile(this.filePath, stringifiedData, 'utf-8');
             return folders;
-        } catch(error) {
+        } catch(error: any) {
             throw new Error("POST: не удалось создать новую папку");
         }
     };
@@ -44,7 +44,7 @@ export class FoldersService {
             const stringifiedData = JSON.stringify(filteredFolders);
             await fs.writeFile(this.filePath, stringifiedData, 'utf-8');
 
-        } catch(error) {
+        } catch(error: any) {
             throw new Error("DELETE: не удалось удалить выбранную папку");
         } 
     };
