@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 
 import { TagsService } from "./tags.service";
 
-import type { Tag } from "./interfaces/tags.interfaces";
+import type { Tag } from "./interfaces/tag.interface";
 
 @Controller()
 export class TagsController {
@@ -20,6 +20,6 @@ export class TagsController {
 
     @Delete('home/tags/:id')
         deleteDataTags(@Param(':id') id: string) {
-            return this.tagsService.daleteSelectedTag(id);
+            return this.tagsService.deleteSelectedTag(id);
         }
 }
