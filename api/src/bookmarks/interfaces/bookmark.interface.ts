@@ -6,6 +6,19 @@ export interface Bookmark {
     title: string;
     url: string;
     description: string;
-    foldersId: Folder | null;
-    tagsId: Tag[] | null;
+    started: boolean;
+    readLater: boolean;
+    foldersId: string | null;
+    tagsId: string[];
 };
+
+export interface PopulatedBookmark {
+    id: string;
+    title: string;
+    description: string;
+    url: string;
+    started: boolean;
+    readLater: boolean;
+    foldersId: Folder | null;
+    tagsId: Tag[];
+}
