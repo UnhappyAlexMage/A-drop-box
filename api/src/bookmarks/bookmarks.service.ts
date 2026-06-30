@@ -6,7 +6,7 @@ import * as fs from 'fs/promises';
 import { FoldersService } from "../folders/folders.service";
 import { TagsService } from "../tags/tags.service";
 
-import type { Bookmark } from "./interfaces/bookmark.interface";
+import type { Bookmark, PopulatedBookmark } from "./interfaces/bookmark.interface";
 
 @Injectable()
 export class BookmarksService {
@@ -27,12 +27,15 @@ export class BookmarksService {
             return dataBookmarks.map(bookmark => {
                 const sortFolder = dataFolders.find(folder => folder.id === bookmark.foldersId) || null;
                 // const tags = dataTags.find(tag => tag.id === bookmark.tagsId) || null;
-                const sortTags = dataTags.filter(tag => bookmark.tagsId?.includes(tag.id) || null);
+                const sortTags = dataTags.filter(tag => bookmark.tagsId?.includes(tag.id) || false);
 
                 return {
                     id: bookmark.id,
                     title: bookmark.title,
-                    description: bookmark.description,
+                    url: bookmark.url,
+                    description: bookmark.description || "",
+                    started: bookmark.started,
+                    readLater: bookmark.readLater,
                     foldersId: sortFolder,
                     tagsId: sortTags
 
@@ -46,14 +49,39 @@ export class BookmarksService {
         }
     };
 
-    async createNewBookmark(newBookmark: Bookmark) : Promise<Bookmark[]> {
-        const bookmarks = await this.getAllDataOfBookmarks();
-        bookmarks.push(newBookmark);
-
+    async createNewBookmark(newBookmark: Bookmark) : Promise<PopulatedBookmark> {
         try {
-            const stringifiedData = JSON.stringify(bookmarks)
+            const fileContent = await fs.readFile(this.filePath, 'utf-8');
+            const bookmarks = JSON.parse(fileContent);
+
+            const [dataFolders, dataTags] = await Promise.all([
+                this.foldersService.getAllDataOfFolders(),
+                this.tagsService.getAllDataOfTags()
+            ]);
+
+            const bookmarkToSave: Bookmark = {
+                id: newBookmark.id,
+                title: newBookmark.title,
+                description: newBookmark.description || "",
+                url: newBookmark.url,
+                started: false,
+                readLater: false,
+                foldersId: newBookmark.foldersId ?? null,
+                tagsId: newBookmark.tagsId ?? []
+            };
+
+            bookmarks.push(bookmarkToSave);
+            const stringifiedData = JSON.stringify(bookmarks, null, 2);
             await fs.writeFile(this.filePath, stringifiedData, 'utf-8');
-            return bookmarks;
+            
+            const sortFolder = dataFolders.find(folder => folder.id === bookmarkToSave.foldersId) ?? null;
+            const sortTags = dataTags.filter(tag => bookmarkToSave.tagsId?.includes(tag.id));
+
+            return {
+                ...bookmarkToSave,
+                foldersId: sortFolder,
+                tagsId: sortTags
+            }
 
         } catch(error: any) {
             throw new Error("POST: не удалось создать новую закладку")
@@ -62,9 +90,10 @@ export class BookmarksService {
 
     async deleteSelectedBookmark(id: string) : Promise<void> {
         try {
-            const bookmarks = await this.getAllDataOfBookmarks();
+            const fileContent = await fs.readFile(this.filePath, 'utf-8');
+            const bookmarks = JSON.parse(fileContent);
             const filteredBookmarks = bookmarks.filter(bookmark => bookmark.id !== id);
-            const stringifiedData = JSON.stringify(filteredBookmarks);
+            const stringifiedData = JSON.stringify(filteredBookmarks, null, 2);
             await fs.writeFile(this.filePath, stringifiedData, 'utf-8');
         } catch(error: any) {
             throw new Error("DELETE: не удалось выполнить удаление выбранного элемента");
